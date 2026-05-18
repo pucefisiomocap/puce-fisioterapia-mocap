@@ -1,157 +1,154 @@
 <p align="center">
-    <img src="https://github.com/freemocap/freemocap/assets/15314521/da1af7fe-f808-43dc-8f59-c579715d6593" height="240" alt="Project Logo">
-</p> 
-
-
-<h3 align="center">The FreeMoCap Project</h3>
-<h4 align="center"> A free-and-open-source, hardware-and-software-agnostic, minimal-cost, research-grade, motion capture
-system and platform for decentralized scientific research, education, and training</h2>
-
-
-<p align="center">
-
-<a href="https://doi.org/10.5281/zenodo.7233714">
-    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7233714.svg" alt=DOI-via-Zenodo.org>
-  </a>
-
-<a href="https://github.com/psf/black">
-    <img alt="https://img.shields.io/badge/code%20style-black-000000.svg" src="https://img.shields.io/badge/code%20style-black-000000.svg">
-  </a>
-
-<a href="https://github.com/freemocap/freemocap/releases/latest">
-        <img src="https://img.shields.io/github/release/freemocap/freemocap.svg" alt="Latest Release">
-    </a>
-
-<a href="https://github.com/freemocap/freemocap/blob/main/LICENSE">
-        <img src="https://img.shields.io/badge/license-AGPL-blue.svg" alt="AGPLv3">
-    </a>
-
-<a href="https://github.com/freemocap/freemocap/issues">
-        <img src="https://img.shields.io/badge/contributions-welcome-ff69b4.svg" alt="Contributions Welcome">
-    </a>
-
-<a href="https://github.com/psf/black">
-    <img alt="https://img.shields.io/badge/code%20style-black-000000.svg" src="https://img.shields.io/badge/code%20style-black-000000.svg">
-  </a>
-
-<a href="https://discord.gg/SgdnzbHDTG">
-    <img alt="Discord Community Server" src="https://dcbadge.vercel.app/api/server/SgdnzbHDTG?style=flat">
-  </a>
-
-
+    <img src="https://github.com/freemocap/freemocap/assets/15314521/da1af7fe-f808-43dc-8f59-c579715d6593" height="180" alt="FreeMoCap Logo">
 </p>
 
+<h2 align="center">PUCE MoCap Fisioterapia — Fe y Alegría</h2>
 
-https://user-images.githubusercontent.com/15314521/192062522-2a8d9305-f181-4869-a4b9-1aa068e094c9.mp4
+<h4 align="center">
+Sistema de captura de movimiento para apoyar procesos de rehabilitación fisioterapéutica comunitaria, basado en FreeMoCap.
+</h4>
 
+---
 
+## Descripción del proyecto
 
+Este proyecto consiste en la adaptación de FreeMoCap para crear un sistema de captura y análisis de movimiento orientado a fisioterapia comunitaria.
 
+El sistema busca apoyar la evaluación de ejercicios físicos, movimientos terapéuticos y análisis de marcha mediante cámaras convencionales, cálculo de ángulos articulares y generación de reportes básicos para seguimiento fisioterapéutico.
 
---
-## QUICKSTART
+El proyecto se desarrolla como parte del programa de Vinculación con la Comunidad de la Pontificia Universidad Católica del Ecuador, en colaboración con Fe y Alegría Ecuador.
 
-> [!NOTE] 
-> For  detailed installation instructions, see our [official documentation's Installation page](https://freemocap.github.io/documentation/installation.html#detailed-pip-installation-instructions)
+---
 
+## Créditos y origen del proyecto
 
-#### 0. Create a a Python 3.10 through 3.12 environment (python3.12 recommended)
-#### 1. Install software via [pip](https://pypi.org/project/freemocap/#description):
+Este repositorio es un fork y adaptación del proyecto original:
 
-```
+**FreeMoCap — Free Motion Capture for Everyone**  
+Repositorio original: https://github.com/freemocap/freemocap  
+Sitio web: https://freemocap.org  
+
+FreeMoCap fue desarrollado por Jon Matthis y el equipo FreeMoCap.
+
+La licencia original del proyecto es **AGPLv3**, la cual se mantiene en este fork.
+
+---
+
+## Identificación institucional
+
+- Institución: Pontificia Universidad Católica del Ecuador
+- Programa: Vinculación con la Comunidad
+- Contraparte: Fe y Alegría Ecuador
+- Año: 2026
+
+---
+
+## Estudiante desarrollador
+
+- Nombre: Jossue Hermel Gallardo Toro
+- Carrera: Ingeniería en Sistemas de Información
+- Tutor: [Colocar nombre del tutor]
+
+---
+
+## Logo institucional
+
+> Agregar los logos institucionales en la carpeta `assets`.
+
+![PUCE Logo](assets/logo_puce.png)
+
+![Fe y Alegría Logo](assets/logo_fe_alegria.png)
+
+---
+
+## Objetivo general
+
+Adaptar un sistema de captura de movimiento basado en FreeMoCap para analizar movimientos corporales en ejercicios físicos, rehabilitación fisioterapéutica y marcha en caminadora, con el propósito de apoyar procesos de evaluación y seguimiento en comunidades con recursos limitados.
+
+---
+
+## Módulos del proyecto
+
+### Módulo 1: Sistema de análisis de ejercicios con pesas
+
+Este módulo permite analizar ejercicios físicos básicos mediante captura de movimiento y cálculo de ángulos articulares.
+
+Ejercicios considerados:
+
+- Sentadilla
+- Press de hombro
+- Peso muerto
+
+Funciones principales:
+
+- Captura del movimiento con cámara.
+- Extracción del esqueleto 3D.
+- Cálculo de ángulos articulares.
+- Indicador visual de postura correcta o incorrecta.
+- Reporte básico por sesión.
+
+---
+
+### Módulo 2: Adaptación a rehabilitación fisioterapéutica
+
+Este módulo adapta el sistema a ejercicios de fisioterapia, donde los rangos de movimiento dependen del paciente y de la lesión.
+
+Ejercicios considerados:
+
+- Flexión de codo
+- Abducción de hombro
+- Rotación de muñeca
+- Extensión de rodilla
+- Dorsiflexión de tobillo
+- Elevación de pierna recta
+
+Funciones principales:
+
+- Perfiles de pacientes en formato JSON.
+- Ángulos configurables por paciente.
+- Registro de progreso por sesión.
+- Reporte en PDF o CSV.
+
+---
+
+### Módulo 3: Análisis de marcha en caminadora
+
+Este módulo permite analizar la marcha de una persona usando varias cámaras y métricas de movimiento.
+
+Métricas consideradas:
+
+- Inclinación del tronco.
+- Ángulo de rodillas.
+- Simetría entre pierna izquierda y derecha.
+- Longitud del paso.
+- Indicadores básicos de riesgo de caída.
+
+Funciones principales:
+
+- Captura con 2 o 3 cámaras.
+- Calibración con tablero ChArUco.
+- Visualización del esqueleto en tiempo real.
+- Panel de métricas.
+- Semáforo de alertas.
+- Reporte final de sesión.
+
+---
+
+## Tecnologías utilizadas
+
+- Python 3.10+
+- FreeMoCap
+- NumPy
+- OpenCV
+- Matplotlib
+- JSON
+- GitHub
+
+---
+
+## Instalación base de FreeMoCap
+
+Para instalar FreeMoCap se puede utilizar el siguiente comando:
+
+```bash
 pip install freemocap
-```
-
-#### 2. Launch the GUI by entering the command:
-
-```
-freemocap
-``` 
-
-####  3. A GUI should pop up that looks like this: 
-
-   <img width="1457" alt="image" src="https://github.com/freemocap/freemocap/assets/15314521/90ef7e7b-48f3-4f46-8d4a-5b5bcc3254b3">
-
-#### 4. Have fun! See the [Beginner Tutorials](https://freemocap.github.io/documentation/your-first-recording.html) on our official docs for detailed instructions.
-
-#### 5. [Join the Discord and let us know how it went!](https://discord.gg/nxv5dNTfKT)
-
-
-
-___
-## Install/run from source code (i.e. the code in this repo)
-
-Open an [Anaconda-enabled command prompt](https://www.anaconda.org) (or your preferred method of environment management) and enter the following commands:
-
-1) Create a `Python` environment (Recommended version  is `python3.11`)
-
-```bash
-conda create -n freemocap-env python=3.11
-```
-
-2) Activate that newly created environment
-
-```bash
-conda activate freemocap-env
-```
-
-3) Clone the repository
-
-```bash
-git clone https://github.com/freemocap/freemocap
-```
-
-4) Navigate into the newly cloned/downloaded `freemocap` folder
-
-```bash
-cd freemocap
-```
-
-5) Install the package via the `pyproject.toml` file
-
-```bash
-pip install -e .
-```
-
-6) Launch the GUI (via the `freemocap.__main__.py` entry point)
-
-```bash
-python -m freemocap
-```
-
-A GUI should pop up!
-
-___
-
-## Documentation 
-
-Our documentation is hosted at: https://freemocap.github.io/documentation
-
-That site is built using `writerside` from this repository: https://github.com/freemocap/documentation
-
-___
-
-
-
-### Contribution Guidelines
-
-Please read our contribution doc: [CONTRIBUTING.md](CONTRIBUTING.md)
-
-
-## Related
-
-[//]: # (* [project-name]&#40;#&#41; - Project description)
-
-## Maintainers
-
-* [Jon Matthis](https://github.com/jonmatthis)
-* [Endurance Idehen](https://github.com/endurance)
-
-## License
-
-This project is licensed under the APGL License - see the [LICENSE](LICENSE) file for details.
-
-If the AGPL does not work for your needs, we are happy to discuss terms to license this software to you with a different
-agreement at a price point that increases exponentially as you
-move [spiritually](https://www.gnu.org/philosophy/open-source-misses-the-point.en.html) away from the `AGPL`
-
