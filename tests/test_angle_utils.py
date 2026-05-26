@@ -39,6 +39,13 @@ def test_calcular_angulo_con_listas_de_python():
     assert angulo == pytest.approx(90.0)
 
 
+def test_calcular_angulo_acepta_puntos_2d():
+    angulo = calcular_angulo([1, 0], [0, 0], [0, 1])
+
+    assert isinstance(angulo, float)
+    assert angulo == pytest.approx(90.0)
+
+
 def test_calcular_angulo_vectores_acepta_numpy_arrays():
     vector_a = np.array([1.0, 0.0, 0.0])
     vector_b = np.array([0.0, 1.0, 0.0])
@@ -52,5 +59,10 @@ def test_calcular_angulo_vectores_error_con_vector_cero():
 
 
 def test_calcular_angulo_error_con_punto_invalido():
-    with pytest.raises(ValueError, match="3 coordenadas"):
-        calcular_angulo([1, 0], [0, 0, 0], [1, 0, 0])
+    with pytest.raises(ValueError, match="2 o 3 coordenadas"):
+        calcular_angulo([1], [0, 0, 0], [1, 0, 0])
+
+
+def test_calcular_angulo_error_con_dimensiones_mixtas():
+    with pytest.raises(ValueError, match="misma cantidad"):
+        calcular_angulo([1, 0], [0, 0, 0], [1, 0])

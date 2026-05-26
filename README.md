@@ -122,6 +122,14 @@ python -m freemocap
 
 ## Instalacion del Fork
 
+En Windows se recomienda ubicar el proyecto en una ruta corta, sin acentos ni espacios:
+
+```powershell
+D:\mocap\puce-fisioterapia-mocap
+```
+
+Evitar usar rutas largas o con caracteres especiales como ruta principal de trabajo, porque algunas dependencias de vision por computadora pueden fallar aunque los archivos existan.
+
 Clonar el repositorio:
 
 ```powershell
@@ -193,7 +201,7 @@ Implementado:
 - Carpeta `assets/` preparada para logos reales.
 - Documentacion de Semana 1 para instalacion y prueba con una camara.
 - Documentacion de Semana 2 para multicamara y calibracion ChArUco.
-- Modulo `puce_mocap.angle_utils` con calculo de angulos 3D.
+- Modulo `puce_mocap.angle_utils` con calculo de angulos 2D y 3D.
 - Pruebas unitarias con pytest para calculo de angulos.
 - Ejemplo ejecutable con puntos simulados de rodilla.
 - Base de Semana 3 para ejercicios con pesas: sentadilla, press de hombro y peso muerto.

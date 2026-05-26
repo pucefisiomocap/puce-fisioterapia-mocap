@@ -45,6 +45,8 @@ ANGULO_PRINCIPAL = {
     "Peso muerto": "desviacion_tronco",
 }
 
+MENSAJE_POSTURA_INCOMPLETA = "Alejate de la camara hasta que se vean cabeza, cadera, rodillas, tobillos y pies."
+
 
 def _punto_landmark(landmarks, landmark_id: int, min_visibility: float = 0.45):
     landmark = landmarks[landmark_id]
@@ -92,7 +94,7 @@ def _feedback_incompleto(ejercicio: str) -> ExerciseFeedback:
         estado=ESTADO_CORREGIR,
         color=COLOR_ROJO,
         angulos={},
-        mensajes=["No se detecta postura completa"],
+        mensajes=[MENSAJE_POSTURA_INCOMPLETA],
     )
 
 
@@ -107,7 +109,7 @@ def _evaluar(ejercicio: str, evaluador, esqueleto: dict[str, list[float]]) -> Ex
         return _feedback_incompleto(ejercicio)
 
 
-def _texto_limitado(texto: str, max_chars: int = 80) -> str:
+def _texto_limitado(texto: str, max_chars: int = 110) -> str:
     if len(texto) <= max_chars:
         return texto
     return texto[: max_chars - 3] + "..."
@@ -172,7 +174,8 @@ def main():
             else:
                 feedback = _feedback_incompleto(ejercicio)
 
-            sesion.registrar_feedback(feedback)
+            if feedback.angulos:
+                sesion.registrar_feedback(feedback)
             _dibujar_panel(frame, ejercicio, feedback, sesion)
             cv2.imshow("PUCE MoCap - Semana 3 Live Pose", frame)
 
@@ -193,4 +196,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

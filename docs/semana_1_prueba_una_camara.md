@@ -29,10 +29,11 @@ Preparar el fork institucional PUCE MoCap Fisioterapia — Fe y Alegría, instal
 
 ## Crear el entorno virtual
 
-Desde PowerShell, ubicarse en la carpeta del repositorio:
+En Windows se recomienda trabajar desde una ruta corta, sin acentos ni
+espacios, para evitar fallos de dependencias de vision por computadora:
 
 ```powershell
-cd "D:\Respaldo\Jossue Puce\Septimo Semestre\PRÁC.DE SERVICIO COMUNITARIO\puce-fisioterapia-mocap"
+cd D:\mocap\puce-fisioterapia-mocap
 python -m venv venv
 ```
 

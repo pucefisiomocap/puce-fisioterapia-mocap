@@ -115,7 +115,13 @@ Teclas:
 - `r`: Reiniciar sesion y contador.
 - `q`: Salir y generar reporte CSV.
 
-Si no se detecta postura completa, el sistema muestra `No se detecta postura completa` y ese frame no se registra como correcto.
+Si no se detecta postura completa, el sistema muestra:
+
+```text
+Alejate de la camara hasta que se vean cabeza, cadera, rodillas, tobillos y pies.
+```
+
+Los frames incompletos no se registran como frames correctos ni se usan para el porcentaje correcto de la sesion.
 
 ### Adaptador para datos FreeMoCap
 
@@ -144,6 +150,20 @@ python -m pip install mediapipe
 ```
 
 No cambiar NumPy ni OpenCV si ya estan funcionando con FreeMoCap.
+
+## Troubleshooting MediaPipe en Windows
+
+Para Windows se recomienda trabajar desde una ruta corta, sin acentos ni espacios:
+
+```powershell
+D:\mocap\puce-fisioterapia-mocap
+```
+
+Si MediaPipe falla con `FileNotFoundError: pose_landmark_cpu.binarypb` aunque el archivo exista, mover o copiar el proyecto a una ruta corta como la anterior, o usar una unidad virtual apuntando a esa carpeta limpia.
+
+Antecedente: este problema se observo al trabajar desde la ruta anterior `D:\Respaldo\Jossue Puce\Septimo Semestre\PRÁC.DE SERVICIO COMUNITARIO\puce-fisioterapia-mocap`. Esa ruta no debe usarse como ruta principal.
+
+Si aparecen rutas antiguas dentro de logs o archivos de `venv\Lib\site-packages`, no se corrigen modificando el codigo del proyecto. Eso normalmente indica que el entorno virtual fue copiado desde la ruta anterior; la solucion limpia es recrear el `venv` dentro de `D:\mocap\puce-fisioterapia-mocap`.
 
 ## Comandos
 
@@ -207,4 +227,3 @@ python examples\semana_3_freemocap_adapter_demo.py
 ## Seguridad y alcance
 
 Este modulo no reemplaza la evaluacion profesional de un fisioterapeuta. No emite diagnosticos medicos y no debe usarse con datos reales de pacientes sin supervision autorizada.
-
