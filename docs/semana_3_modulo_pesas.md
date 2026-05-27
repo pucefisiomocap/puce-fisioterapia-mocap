@@ -97,15 +97,27 @@ examples/semana_3_overlay_demo.py
 
 Abre la camara 0 y muestra identidad PUCE con un indicador visual simulado. No estima pose real; sirve como pantalla base.
 
-### Demo real en vivo con pose y evaluacion
+### Interfaz final en vivo con pose y evaluacion
 
-Archivo principal de Semana 3:
+Archivo principal de Semana 3 / Modulo 1:
+
+```text
+puce_mocap/modulo_pesas_app.py
+```
+
+Comando final:
+
+```powershell
+python -m puce_mocap.modulo_pesas_app
+```
+
+Esta es la interfaz final de Semana 3 / Modulo 1. Abre la camara 0, detecta el cuerpo con MediaPipe Pose, dibuja el esqueleto sobre la camara, evalua el ejercicio seleccionado y genera `reports/semana_3_live_pose_report.csv` al salir. La pantalla se reorganizo como dashboard profesional en modo oscuro con header institucional, logos PUCE y Fe y Alegria, panel grande de camara, panel central de estado, panel derecho de ejercicios, tarjetas de metricas, leyenda y sesion en curso.
+
+El archivo antiguo queda solo como wrapper de compatibilidad:
 
 ```text
 examples/semana_3_live_pose_exercise_demo.py
 ```
-
-Abre la camara 0, detecta el cuerpo con MediaPipe Pose, dibuja el esqueleto, evalua el ejercicio seleccionado y genera `reports/semana_3_live_pose_report.csv` al salir.
 
 Teclas:
 
@@ -191,7 +203,13 @@ Demo visual basico:
 python examples\semana_3_overlay_demo.py
 ```
 
-Demo real en vivo:
+Interfaz final del Modulo 1:
+
+```powershell
+python -m puce_mocap.modulo_pesas_app
+```
+
+Wrapper antiguo compatible:
 
 ```powershell
 python examples\semana_3_live_pose_exercise_demo.py
@@ -207,17 +225,19 @@ python examples\semana_3_freemocap_adapter_demo.py
 
 - Captura de `python -m pytest` con pruebas aprobadas.
 - Captura del demo de consola mostrando estado, angulos y retroalimentacion.
-- Captura con esqueleto superpuesto en el demo live.
+- Captura de la interfaz final con header, logos, panel de camara y esqueleto superpuesto.
 - Captura `VERDE / CORRECTO`.
 - Captura `ROJO / CORREGIR_POSTURA`.
 - Captura del contador de repeticiones.
 - Captura del porcentaje correcto de sesion.
+- Captura del panel de ejercicios con Sentadilla, Press hombro, Peso muerto, Reiniciar y Salir.
+- Captura del panel inferior con leyenda y sesion en curso.
 - Archivo `reports/semana_3_live_pose_report.csv` generado.
 - Nota de que FreeMoCap sigue abriendo correctamente y no se modifico su logica interna.
 
 ## Limitaciones actuales
 
-- El demo live usa MediaPipe Pose como prototipo funcional de camara en vivo.
+- La interfaz final usa MediaPipe Pose como complemento funcional de camara en vivo, sin modificar el nucleo de FreeMoCap.
 - La reconstruccion 3D completa y profunda con FreeMoCap queda pendiente.
 - El contador de repeticiones es basico: cuenta transiciones de `CORREGIR_POSTURA` a `CORRECTO`.
 - La compensacion lumbar del press de hombro se marca como validacion futura si no existen puntos completos del tronco.

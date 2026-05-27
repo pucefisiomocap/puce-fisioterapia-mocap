@@ -59,7 +59,13 @@ Adaptar un sistema de captura de movimiento basado en FreeMoCap para analizar mo
 
 ### Modulo 1: Analisis de ejercicios con pesas
 
-Analisis de ejercicios fisicos basicos mediante angulos articulares, indicador correcto/incorrecto y retroalimentacion visual en español. La Semana 3 ya incluye base con datos simulados, reporte CSV, demo visual y un prototipo real en vivo con camara usando MediaPipe Pose como complemento.
+Analisis de ejercicios fisicos basicos mediante angulos articulares, indicador correcto/incorrecto y retroalimentacion visual en español. La Semana 3 / Modulo 1 incluye datos simulados, reporte CSV y una interfaz final en vivo tipo dashboard con camara, logos institucionales, esqueleto superpuesto y MediaPipe Pose como complemento.
+
+Comando principal del producto final de Semana 3:
+
+```powershell
+python -m puce_mocap.modulo_pesas_app
+```
 
 Ejercicios previstos:
 
@@ -181,7 +187,13 @@ Ejecutar el demo visual OpenCV del modulo de pesas:
 python examples\semana_3_overlay_demo.py
 ```
 
-Ejecutar el demo real en vivo con pose:
+Ejecutar el producto final del Modulo 1 con dashboard en vivo:
+
+```powershell
+python -m puce_mocap.modulo_pesas_app
+```
+
+Ejecutar el wrapper antiguo del demo real en vivo con pose:
 
 ```powershell
 python examples\semana_3_live_pose_exercise_demo.py
@@ -207,13 +219,14 @@ Implementado:
 - Base de Semana 3 para ejercicios con pesas: sentadilla, press de hombro y peso muerto.
 - Sesion simple con conteo de repeticiones, porcentaje correcto y reporte CSV.
 - Demo visual OpenCV con identidad PUCE para el modulo de pesas.
-- Prototipo real en vivo de Semana 3 con camara, esqueleto superpuesto y evaluacion de ejercicios.
+- Interfaz final de Semana 3 / Modulo 1 con dashboard oscuro, camara en vivo, logos, paneles de estado, ejercicios, metricas y reporte CSV.
+- Wrapper de compatibilidad para el demo real en vivo de Semana 3.
 - Adaptador inicial para conectar diccionarios 3D de FreeMoCap con las reglas del modulo de pesas.
 - Carpeta `sesiones/` preparada para pruebas locales no versionadas.
 
 Pendiente manual:
 
-- Agregar logos reales en `assets/`.
+- Verificar manualmente que los logos reales de `assets/` carguen correctamente en la interfaz final.
 - Instalar dependencias completas de FreeMoCap en el entorno local.
 - Probar fisicamente FreeMoCap con una camara.
 - Probar configuracion multicamara con tablero ChArUco.
@@ -260,7 +273,8 @@ puce-fisioterapia-mocap/
 │   ├── exercise_report.py
 │   ├── exercise_rules.py
 │   ├── exercise_session.py
-│   └── freemocap_adapter.py
+│   ├── freemocap_adapter.py
+│   └── modulo_pesas_app.py
 ├── reports/
 │   └── .gitkeep
 ├── sesiones/
