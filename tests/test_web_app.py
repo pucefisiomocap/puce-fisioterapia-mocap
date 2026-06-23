@@ -1,0 +1,195 @@
+import numpy as np
+import pytest
+
+pytest.importorskip("fastapi")
+
+from fastapi.testclient import TestClient
+
+from puce_mocap.skeleton_frame import SkeletonFrame
+from puce_mocap.web.app import create_app
+from puce_mocap.web.camera_service import BrowserPoseFrame
+from puce_mocap.web.controller import PuceWebController
+
+
+def sentadilla_correcta():
+    return {
+        "right_shoulder": [0.0, 2.0, 0.0],
+        "right_hip": [0.0, 1.0, 0.0],
+        "right_knee": [0.0, 0.0, 0.0],
+        "right_ankle": [1.0, 0.0, 0.0],
+        "right_foot": [1.0, 1.0, 0.0],
+    }
+
+
+def codo_90():
+    return {
+        "right_shoulder": [1.0, 0.0, 0.0],
+        "right_elbow": [0.0, 0.0, 0.0],
+        "right_wrist": [0.0, 1.0, 0.0],
+    }
+
+
+def marcha_normal():
+    return {
+        "nose": [0.0, 2.4, 0.0],
+        "left_shoulder": [-0.2, 2.0, 0.0],
+        "right_shoulder": [0.2, 2.0, 0.0],
+        "left_hip": [-0.2, 1.0, 0.0],
+        "right_hip": [0.2, 1.0, 0.0],
+        "left_knee": [-0.2, 0.5, 0.0],
+        "right_knee": [0.2, 0.5, 0.0],
+        "left_ankle": [-0.2, 0.0, 0.0],
+        "right_ankle": [0.2, 0.0, 0.0],
+    }
+
+
+class FakePoseProcessor:
+    def close(self):
+        return None
+
+    def process_jpeg(self, image_bytes):
+        assert image_bytes == b"jpeg-de-prueba"
+        landmarks = [{"x": 0.5, "y": 0.5, "visibility": 1.0} for _ in range(33)]
+        return BrowserPoseFrame(
+            SkeletonFrame(sentadilla_correcta(), timestamp=0.0, source="navegador_prueba"),
+            landmarks,
+            12.5,
+        )
+
+
+def test_web_app_factory_expone_inicio_y_estado():
+    with TestClient(create_app()) as client:
+        assert client.get("/").status_code == 200
+        info_response = client.get("/api/app-info")
+        info = info_response.json()
+        state = client.get("/api/state").json()
+
+    assert info["local_only"] is False
+    assert info["deployment"]["browser_camera"] is True
+    assert info["deployment"]["server_filesystem_paths"] is False
+    assert any(module["key"] == "weights" for module in info["modules"])
+    assert state["module"] == "weights"
+    assert state["source"]["mode"] == "none"
+    assert info_response.headers["cache-control"] == "no-store"
+    assert "camera=(self)" in info_response.headers["permissions-policy"]
+
+
+def test_web_controller_pesas_registra_y_exporta_reporte(monkeypatch, tmp_path):
+    monkeypatch.setenv("PUCE_MOCAP_DATA_DIR", str(tmp_path))
+    controller = PuceWebController()
+
+    controller.start_weights({})
+    controller.process_skeleton(SkeletonFrame(sentadilla_correcta(), timestamp=0.0, source="prueba"))
+    state = controller.snapshot()
+    controller.save_weights()
+    saved = controller.snapshot()["last_report"]
+
+    assert state["weights"]["recording"] is True
+    assert state["metrics"][0]["value"] == "90.0°"
+    assert saved == {"available": True, "filename": "pesas_v2.csv"}
+    assert tmp_path.joinpath("reports", "pesas_v2.csv").is_file()
+    controller.close()
+
+
+def test_web_controller_rehabilitacion_y_marcha_exportan(monkeypatch, tmp_path):
+    monkeypatch.setenv("PUCE_MOCAP_DATA_DIR", str(tmp_path))
+    controller = PuceWebController()
+
+    controller.set_module("rehab")
+    controller.configure_rehab({"exercise": "flexion_codo"})
+    controller.start_rehab({})
+    controller.process_skeleton(SkeletonFrame(codo_90(), timestamp=0.0, source="prueba"))
+    controller.save_rehab()
+
+    controller.set_module("gait")
+    controller.start_gait()
+    controller.process_skeleton(SkeletonFrame(marcha_normal(), timestamp=0.0, source="prueba"))
+    controller.stop_gait()
+
+    assert tmp_path.joinpath("reports", "rehabilitacion_v3.csv").is_file()
+    assert tmp_path.joinpath("reports", "marcha_v2.csv").is_file()
+    controller.close()
+
+
+def test_web_endpoint_carga_archivo_freemocap_desde_el_navegador(tmp_path):
+    recording = tmp_path / "recording"
+    output = recording / "output_data"
+    output.mkdir(parents=True)
+    data = np.full((1, 33, 3), np.nan)
+    points = {
+        0: [0.0, 2.4, 0.0],
+        11: [-0.2, 2.0, 0.0],
+        12: [0.2, 2.0, 0.0],
+        23: [-0.2, 1.0, 0.0],
+        24: [0.2, 1.0, 0.0],
+        25: [-0.2, 0.5, 0.0],
+        26: [0.2, 0.5, 0.0],
+        27: [-0.2, 0.0, 0.0],
+        28: [0.2, 0.0, 0.0],
+    }
+    for index, point in points.items():
+        data[0, index] = point
+    np.save(output / "mediapipe_body_3d_xyz.npy", data)
+
+    with TestClient(create_app()) as client:
+        assert client.post("/api/module", json={"module": "gait"}).status_code == 200
+        response = client.post(
+            "/api/source/freemocap/upload?filename=mediapipe_body_3d_xyz.npy&unit=m",
+            content=(output / "mediapipe_body_3d_xyz.npy").read_bytes(),
+            headers={"Content-Type": "application/octet-stream"},
+        )
+        state = response.json()["state"]
+
+    assert response.status_code == 200
+    assert state["source"]["mode"] == "freemocap"
+    assert state["source"]["freemocap"]["frame_count"] == 1
+    assert state["source"]["freemocap"]["filename"] == "mediapipe_body_3d_xyz.npy"
+    assert "path" not in state["source"]["freemocap"]
+    assert state["visualization"]["detected"] is True
+    assert state["metrics"][0]["value"] == "180.0°"
+
+
+def test_web_endpoint_procesa_camara_del_navegador():
+    controller = PuceWebController(pose_processor=FakePoseProcessor())
+    with TestClient(create_app(controller)) as client:
+        started = client.post(
+            "/api/source/camera/start",
+            json={"device_label": "Cámara integrada", "width": 640, "height": 360},
+        )
+        response = client.post(
+            "/api/source/camera/frame",
+            content=b"jpeg-de-prueba",
+            headers={"Content-Type": "image/jpeg"},
+        )
+        state = response.json()["state"]
+
+    assert started.status_code == 200
+    assert response.status_code == 200
+    assert response.json()["visualization"]["processing_ms"] == 12.5
+    assert state["source"]["mode"] == "browser_camera"
+    assert state["source"]["camera"]["label"] == "Cámara integrada"
+    assert state["metrics"][0]["value"] == "90.0°"
+
+
+def test_web_perfil_y_reporte_se_descargan_sin_rutas_del_servidor(monkeypatch, tmp_path):
+    monkeypatch.setenv("PUCE_MOCAP_DATA_DIR", str(tmp_path))
+    controller = PuceWebController()
+    controller.start_weights({})
+    controller.process_skeleton(SkeletonFrame(sentadilla_correcta(), timestamp=0.0, source="prueba"))
+    controller.save_weights()
+
+    profile = controller.rehab_profile_json()
+    with TestClient(create_app(controller)) as client:
+        uploaded = client.post(
+            "/api/rehab/profile/upload",
+            content=profile,
+            headers={"Content-Type": "application/json"},
+        )
+        downloaded_profile = client.get("/api/rehab/profile/download")
+        downloaded_report = client.get("/api/reports/latest")
+
+    assert uploaded.status_code == 200
+    assert downloaded_profile.status_code == 200
+    assert downloaded_profile.headers["content-disposition"].endswith('"perfil_rehabilitacion.json"')
+    assert downloaded_report.status_code == 200
+    assert "attachment; filename=\"pesas_v2.csv\"" in downloaded_report.headers["content-disposition"]

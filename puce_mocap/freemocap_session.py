@@ -74,6 +74,11 @@ class FreeMoCapSessionProvider:
             length_unit=self.length_unit,
         )
 
+    def close(self) -> None:
+        memory_map = getattr(self._data, "_mmap", None)
+        if memory_map is not None:
+            memory_map.close()
+
     def __iter__(self) -> Iterator[SkeletonFrame]:
         for index in range(self.frame_count):
             yield self.get_frame(index)

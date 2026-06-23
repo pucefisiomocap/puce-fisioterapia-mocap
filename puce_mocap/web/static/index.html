@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#182326" />
+    <title>PUCE MoCap Fisioterapia</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="/assets/logo_puce.png" alt="Pontificia Universidad Católica del Ecuador" />
+        <div>
+          <strong>PUCE MoCap</strong>
+          <span>Fisioterapia comunitaria</span>
+        </div>
+      </div>
+      <div class="institution">
+        <span>Vinculación con la Comunidad</span>
+        <span>Fe y Alegría Ecuador · 2026</span>
+      </div>
+      <img class="ally-logo" src="/assets/logo_fe_alegria.png" alt="Fe y Alegría Ecuador" />
+    </header>
+
+    <nav class="module-nav" aria-label="Módulos de análisis">
+      <button class="module-tab active" data-module="weights">
+        <span class="module-number">01</span>
+        <span>Pesas</span>
+      </button>
+      <button class="module-tab" data-module="rehab">
+        <span class="module-number">02</span>
+        <span>Rehabilitación</span>
+      </button>
+      <button class="module-tab" data-module="gait">
+        <span class="module-number">03</span>
+        <span>Caminadora</span>
+      </button>
+    </nav>
+
+    <main class="workspace">
+      <section class="capture-column" aria-label="Fuente de movimiento">
+        <div class="capture-toolbar">
+          <div class="source-switch" role="group" aria-label="Fuente">
+            <button id="source-camera-tab" class="source-option active">Cámara</button>
+            <button id="source-session-tab" class="source-option">Sesión FreeMoCap</button>
+          </div>
+
+          <div id="camera-source-controls" class="source-controls">
+            <label class="device-field">
+              <span class="sr-only">Cámara</span>
+              <select id="camera-device" aria-label="Cámara disponible">
+                <option value="">Cámara predeterminada</option>
+              </select>
+            </label>
+            <label class="quality-field">
+              <span class="sr-only">Calidad</span>
+              <select id="camera-resolution" aria-label="Calidad de captura">
+                <option value="640x360">Equilibrada</option>
+                <option value="960x540">Alta</option>
+                <option value="1280x720">Máxima</option>
+              </select>
+            </label>
+            <button id="camera-start" class="button primary">Activar cámara</button>
+            <button id="camera-stop" class="button quiet" disabled>Detener</button>
+          </div>
+
+          <div id="session-source-controls" class="source-controls" hidden>
+            <label class="file-button">
+              <input id="freemocap-file" type="file" accept=".npy,application/octet-stream" />
+              Seleccionar esqueleto .npy
+            </label>
+            <label class="quality-field">
+              <span class="sr-only">Unidad</span>
+              <select id="freemocap-unit" aria-label="Unidad de longitud">
+                <option value="sin_especificar">Unidad sin especificar</option>
+                <option value="mm">Milímetros</option>
+                <option value="cm">Centímetros</option>
+                <option value="m">Metros</option>
+              </select>
+            </label>
+            <button id="freemocap-load" class="button primary" disabled>Cargar sesión</button>
+          </div>
+        </div>
+
+        <div id="motion-stage" class="motion-stage" data-guide="none">
+          <video id="camera-video" autoplay muted playsinline hidden></video>
+          <canvas id="pose-overlay" aria-hidden="true"></canvas>
+          <div id="video-placeholder" class="stage-empty">
+            <div class="stage-empty-mark" aria-hidden="true"></div>
+            <strong>Sin fuente de movimiento</strong>
+            <span>Active la cámara de este dispositivo o cargue un esqueleto procesado por FreeMoCap.</span>
+          </div>
+          <div class="stage-topline">
+            <span id="source-badge" class="stage-badge">Fuente inactiva</span>
+            <span id="analysis-badge" class="stage-badge accent">Pesas · Sentadilla</span>
+          </div>
+          <div id="view-guide" class="view-guide" hidden>
+            <span id="view-guide-label"></span>
+          </div>
+          <div id="processing-indicator" class="processing-indicator" hidden>Analizando movimiento</div>
+        </div>
+
+        <div id="session-timeline" class="session-timeline" hidden>
+          <div>
+            <strong id="session-filename">Sesión FreeMoCap</strong>
+            <span id="session-summary">Fotograma 1 de 1</span>
+          </div>
+          <input id="frame-slider" type="range" min="0" max="0" value="0" aria-label="Fotograma de sesión" />
+        </div>
+
+        <div class="status-strip" role="status" aria-live="polite">
+          <span id="status-dot" class="status-dot"></span>
+          <span id="status-text">Sistema listo.</span>
+          <a id="report-download" class="report-link" href="/api/reports/latest" hidden>Descargar reporte</a>
+        </div>
+      </section>
+
+      <aside class="analysis-column">
+        <header class="analysis-header">
+          <div>
+            <span class="eyebrow">Análisis activo</span>
+            <h1 id="module-title">Ejercicios con pesas</h1>
+          </div>
+          <span id="recording-state" class="recording-state">En espera</span>
+        </header>
+
+        <div id="metrics" class="metrics" aria-label="Métricas"></div>
+
+        <section id="weights-controls" class="control-section">
+          <div class="primary-control">
+            <label for="weights-exercise">Ejercicio</label>
+            <select id="weights-exercise"></select>
+          </div>
+
+          <details class="settings" open>
+            <summary>Paciente y rangos</summary>
+            <div class="settings-body">
+              <div class="form-grid two">
+                <label>Nombre <input id="weights-name" type="text" autocomplete="off" /></label>
+                <label>Código <input id="weights-code" type="text" autocomplete="off" /></label>
+                <label>Condición <input id="weights-condition" type="text" autocomplete="off" /></label>
+                <label>Observaciones <input id="weights-notes" type="text" autocomplete="off" /></label>
+              </div>
+              <div class="range-group">
+                <span>Rango de movimiento</span>
+                <div class="form-grid four">
+                  <label>Inicio mín. <input id="weights-start-min" type="number" step="0.1" /></label>
+                  <label>Inicio máx. <input id="weights-start-max" type="number" step="0.1" /></label>
+                  <label>Objetivo mín. <input id="weights-target-min" type="number" step="0.1" /></label>
+                  <label>Objetivo máx. <input id="weights-target-max" type="number" step="0.1" /></label>
+                </div>
+              </div>
+              <button id="weights-configure" class="button secondary">Aplicar configuración</button>
+            </div>
+          </details>
+
+          <div class="action-bar">
+            <button id="weights-start" class="button primary grow">Iniciar ejercicio</button>
+            <button id="weights-pause" class="button secondary">Pausar</button>
+            <button id="weights-reset" class="button quiet">Reiniciar</button>
+            <button id="weights-save" class="button quiet">Generar reporte</button>
+          </div>
+        </section>
+
+        <section id="rehab-controls" class="control-section" hidden>
+          <div class="primary-control">
+            <label for="rehab-exercise">Ejercicio terapéutico</label>
+            <select id="rehab-exercise"></select>
+          </div>
+
+          <div class="context-row">
+            <label class="side-control">
+              Lado evaluado
+              <select id="rehab-side">
+                <option value="right">Derecho</option>
+                <option value="left">Izquierdo</option>
+              </select>
+            </label>
+            <label>
+              Repeticiones objetivo
+              <input id="rehab-repetitions" type="number" min="1" step="1" />
+            </label>
+          </div>
+
+          <details class="settings">
+            <summary>Paciente, perfil y rangos</summary>
+            <div class="settings-body">
+              <div class="profile-actions">
+                <label class="file-button secondary">
+                  <input id="rehab-profile-file" type="file" accept=".json,application/json" />
+                  Importar perfil JSON
+                </label>
+                <a class="button quiet download-button" href="/api/rehab/profile/download">Descargar perfil</a>
+              </div>
+              <div class="form-grid two">
+                <label>Nombre <input id="rehab-name" type="text" autocomplete="off" /></label>
+                <label>Código <input id="rehab-code" type="text" autocomplete="off" /></label>
+                <label>Condición <input id="rehab-injury" type="text" autocomplete="off" /></label>
+                <label>Observaciones <input id="rehab-notes" type="text" autocomplete="off" /></label>
+              </div>
+              <div class="range-group">
+                <span>Rango terapéutico</span>
+                <div class="form-grid four">
+                  <label>Inicio mín. <input id="rehab-start-min" type="number" step="0.1" /></label>
+                  <label>Inicio máx. <input id="rehab-start-max" type="number" step="0.1" /></label>
+                  <label>Objetivo mín. <input id="rehab-target-min" type="number" step="0.1" /></label>
+                  <label>Objetivo máx. <input id="rehab-target-max" type="number" step="0.1" /></label>
+                </div>
+              </div>
+              <button id="rehab-configure" class="button secondary">Aplicar configuración</button>
+            </div>
+          </details>
+
+          <div class="action-bar">
+            <button id="rehab-start" class="button primary grow">Iniciar ejercicio</button>
+            <button id="rehab-calibrate" class="button secondary">Calibrar muñeca</button>
+            <button id="rehab-pause" class="button secondary">Pausar</button>
+            <button id="rehab-reset" class="button quiet">Reiniciar</button>
+            <button id="rehab-save" class="button quiet">Generar reporte</button>
+          </div>
+        </section>
+
+        <section id="gait-controls" class="control-section" hidden>
+          <div class="primary-control">
+            <label for="gait-view">Posición de la cámara</label>
+            <select id="gait-view">
+              <option value="Lateral">Vista lateral</option>
+              <option value="Frontal">Vista frontal</option>
+            </select>
+          </div>
+          <div id="gait-guidance" class="guidance">
+            Coloque la cámara a un costado y mantenga el cuerpo completo dentro del encuadre.
+          </div>
+          <div class="action-bar">
+            <button id="gait-start" class="button primary grow">Iniciar sesión</button>
+            <button id="gait-stop" class="button secondary">Finalizar y reportar</button>
+            <button id="gait-reset" class="button quiet">Reiniciar</button>
+          </div>
+        </section>
+
+        <p class="clinical-note">
+          Herramienta de apoyo académico y comunitario. No sustituye la evaluación de un fisioterapeuta.
+        </p>
+      </aside>
+    </main>
+
+    <footer class="credits">
+      <span>Proyecto base: FreeMoCap · AGPLv3</span>
+      <span>Jossue Hermel Gallardo Toro · Ingeniería en Sistemas de Información</span>
+    </footer>
+
+    <canvas id="capture-canvas" hidden></canvas>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

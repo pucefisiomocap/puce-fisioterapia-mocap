@@ -191,6 +191,43 @@ puce-mocap
 
 La ventana Qt mantiene los tres modulos como paginas de un mismo proceso, con botones reales, atajos y diseño adaptable. MediaPipe se carga en un worker y FreeMoCap original se abre de forma asincrona en un proceso separado.
 
+Ejecutar la versión web, paralela a Qt:
+
+```powershell
+python -m pip install -e ".[puce,web]"
+python -m puce_mocap.web --host 127.0.0.1 --port 8000
+# equivalente tras instalar:
+puce-mocap-web --host 127.0.0.1 --port 8000
+```
+
+Abrir `http://127.0.0.1:8000` en el navegador para pruebas locales. La interfaz no ejecuta verificaciones de dependencias y el proceso Uvicorn no debe exponerse directamente a internet.
+
+La cámara web se obtiene con `getUserMedia()` en el navegador del usuario. El video se muestra localmente con la fluidez nativa del dispositivo y se envían fotogramas comprimidos al servidor para el análisis MediaPipe. Por ello, en un VPS la aplicación debe publicarse mediante **HTTPS**; los navegadores bloquean la cámara en orígenes HTTP que no sean `localhost`.
+
+Las sesiones FreeMoCap y los perfiles de rehabilitación se transfieren como archivos:
+
+- La sesión se carga seleccionando `*_body_3d_xyz.npy`.
+- El perfil JSON se importa y descarga desde el navegador.
+- Los reportes CSV se descargan desde la interfaz.
+- No se solicitan ni se muestran rutas del sistema de archivos del servidor.
+
+### Despliegue inicial en VPS
+
+Mantener Uvicorn escuchando solo en la interfaz local del VPS y publicar el servicio mediante un proxy inverso con TLS:
+
+```bash
+puce-mocap-web --host 127.0.0.1 --port 8000
+```
+
+El proxy, por ejemplo Nginx o Caddy, debe:
+
+- Servir el dominio mediante HTTPS.
+- Reenviar las peticiones al puerto `8000`.
+- Permitir cargas de hasta `512 MB` para los archivos `.npy`.
+- Añadir autenticación antes de cualquier uso con datos reales.
+
+La aplicación no habilita CORS y usa peticiones del mismo origen. La versión actual mantiene una sola sesión en memoria por proceso y todavía no incluye autenticación propia; no debe publicarse directamente en un puerto abierto a internet.
+
 Ejecutar el ejemplo de calculo de angulos:
 
 ```powershell
