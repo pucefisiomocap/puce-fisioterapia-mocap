@@ -1,10 +1,11 @@
 import os
+from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QComboBox, QPushButton
+from PySide6.QtWidgets import QApplication, QComboBox, QPlainTextEdit, QPushButton
 
 from puce_mocap.exercise_rules import ExerciseFeedback
 from puce_mocap.rehab_analyzer import RehabAnalysisResult
@@ -26,6 +27,27 @@ def test_menu_emite_navegacion_con_click_de_mouse():
     QTest.mouseClick(button, Qt.MouseButton.LeftButton)
 
     assert selected == ["pesas"]
+
+
+def test_menu_abre_creditos_completos_y_licencia():
+    app()
+    page = MenuPage()
+    button = next(button for button in page.findChildren(QPushButton) if button.objectName() == "creditsButton")
+
+    QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+    QApplication.processEvents()
+
+    assert page.credits_dialog is not None
+    assert page.credits_dialog.isVisible()
+    details = page.credits_dialog.findChild(type(page.status), "creditsDetails")
+    license_view = page.credits_dialog.findChild(QPlainTextEdit, "licenseText")
+    assert "Jossue Hermel Gallardo Toro" in details.text()
+    assert "Kevin Lima Blanco" in details.text()
+    assert "Francisco Rodríguez Clavijo" in details.text()
+    assert "Dirección de Vinculación con la Colectividad" in details.text()
+    license_file = Path(__file__).resolve().parents[1] / "LICENSE"
+    assert license_view.toPlainText() == license_file.read_text(encoding="utf-8")
+    page.credits_dialog.close()
 
 
 def test_paginas_de_analisis_tienen_controles_qt_reales():

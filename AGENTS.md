@@ -23,9 +23,9 @@ Mantener visible esta información en documentación, pantallas principales y re
 - Programa: Vinculación con la Comunidad
 - Contraparte: Fe y Alegría Ecuador
 - Año: 2026
-- Estudiante desarrollador: Jossue Hermel Gallardo Toro
+- Estudiantes desarrolladores: Jossue Hermel Gallardo Toro y Kevin Lima Blanco
 - Carrera: Ingeniería en Sistemas de Información
-- Tutor: RODRIGUEZ CLAVIJO FRANCISCO
+- Tutor: Francisco Rodríguez Clavijo
 - Proyecto base: FreeMoCap — Free Motion Capture for Everyone
 - Repositorio original: https://github.com/freemocap/freemocap
 - Sitio oficial: https://freemocap.org

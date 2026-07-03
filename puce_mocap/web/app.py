@@ -10,6 +10,7 @@ from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from puce_mocap.credits import credits_payload
 from puce_mocap.web.controller import PuceWebController, WebActionError
 
 
@@ -70,6 +71,10 @@ def create_app(controller: PuceWebController | None = None) -> FastAPI:
     @app.get("/api/app-info")
     def app_info() -> dict[str, Any]:
         return ctrl().app_info()
+
+    @app.get("/api/credits")
+    def credits() -> dict[str, Any]:
+        return credits_payload()
 
     @app.get("/api/state")
     def state() -> dict[str, Any]:

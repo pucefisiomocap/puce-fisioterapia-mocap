@@ -14,6 +14,8 @@ from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
     QDoubleSpinBox,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
     QFrame,
     QGridLayout,
@@ -25,6 +27,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QPlainTextEdit,
     QScrollArea,
     QSlider,
     QSpinBox,
@@ -35,6 +38,16 @@ from PySide6.QtWidgets import (
 
 from puce_mocap.camera_worker import CameraPoseWorker, LivePoseResult
 from puce_mocap.app_paths import profiles_dir
+from puce_mocap.credits import (
+    FREEMOCAP_NAME,
+    FREEMOCAP_REPOSITORY,
+    FREEMOCAP_WEBSITE,
+    LICENSE_NAME,
+    PROJECT_DESCRIPTION,
+    STUDENTS,
+    TUTOR,
+    license_text,
+)
 from puce_mocap.exercise_rules import (
     ESTADO_POSTURA_INCOMPLETA,
     ExerciseFeedback,
@@ -132,6 +145,54 @@ def _detected_cameras() -> list[tuple[str, int]]:
 
 def _phase_text(phase: str) -> str:
     return PHASE_LABELS.get(phase, phase.replace("_", " ").capitalize())
+
+
+class CreditsDialog(QDialog):
+    """Muestra los créditos institucionales y la licencia AGPLv3 completa."""
+
+    def __init__(self, parent: QWidget | None = None):
+        super().__init__(parent)
+        self.setObjectName("creditsDialog")
+        self.setWindowTitle("Créditos del proyecto")
+        self.resize(840, 700)
+        layout = QVBoxLayout(self)
+
+        title = QLabel("Créditos del proyecto")
+        title.setObjectName("dialogTitle")
+        layout.addWidget(title)
+
+        details = QLabel(
+            "<b>Estudiantes</b><br>"
+            + "<br>".join(STUDENTS)
+            + f"<br><br><b>Tutor</b><br>{TUTOR}"
+            + f"<br><br>{PROJECT_DESCRIPTION}"
+            + f"<br><br><b>Proyecto original</b><br>"
+            + f'<a href="{FREEMOCAP_REPOSITORY}">{FREEMOCAP_NAME}</a> · '
+            + f'<a href="{FREEMOCAP_WEBSITE}">Sitio oficial</a>'
+        )
+        details.setObjectName("creditsDetails")
+        details.setWordWrap(True)
+        details.setOpenExternalLinks(True)
+        details.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextBrowserInteraction
+            | Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        layout.addWidget(details)
+
+        license_title = QLabel(LICENSE_NAME)
+        license_title.setObjectName("licenseTitle")
+        layout.addWidget(license_title)
+
+        self.license_view = QPlainTextEdit()
+        self.license_view.setObjectName("licenseText")
+        self.license_view.setReadOnly(True)
+        self.license_view.setPlainText(license_text())
+        layout.addWidget(self.license_view, 1)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.button(QDialogButtonBox.StandardButton.Close).setText("Cerrar")
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
 
 
 class MenuPage(QWidget):
@@ -234,11 +295,15 @@ class MenuPage(QWidget):
         verify = QPushButton("Verificar entorno")
         verify.setObjectName("secondaryAction")
         verify.clicked.connect(self.verify_requested)
+        credits = QPushButton("Créditos completos y licencia")
+        credits.setObjectName("creditsButton")
+        credits.clicked.connect(self.open_credits)
         close = QPushButton("Salir")
         close.setObjectName("quietAction")
         close.clicked.connect(self.exit_requested)
         tools.addWidget(freemocap)
         tools.addWidget(verify)
+        tools.addWidget(credits)
         tools.addStretch()
         tools.addWidget(close)
         layout.addLayout(tools)
@@ -255,6 +320,12 @@ class MenuPage(QWidget):
         footer.setProperty("muted", True)
         layout.addWidget(footer)
         layout.addStretch()
+
+        self.credits_dialog: CreditsDialog | None = None
+
+    def open_credits(self) -> None:
+        self.credits_dialog = CreditsDialog(self)
+        self.credits_dialog.open()
 
 
 class AnalysisPage(QWidget):
@@ -1269,6 +1340,18 @@ QLabel#eyebrow {
     letter-spacing: 1px;
 }
 QLabel#sectionTitle { font-size: 18px; font-weight: 700; color: #ffffff; }
+QLabel#dialogTitle { font-size: 24px; font-weight: 750; color: #ffffff; }
+QLabel#licenseTitle { font-size: 15px; font-weight: 700; color: #ffffff; }
+QDialog#creditsDialog { background: #071827; }
+QPlainTextEdit#licenseText {
+    background: #02090f;
+    border: 1px solid #284d68;
+    border-radius: 8px;
+    color: #dcebf4;
+    font-family: Consolas;
+    font-size: 11px;
+    padding: 10px;
+}
 QLabel#identityCaption { color: #35516a; font-weight: 600; }
 QLabel#menuStatus {
     background: #0b243a;

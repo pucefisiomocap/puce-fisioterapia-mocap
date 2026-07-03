@@ -254,8 +254,50 @@
 
     <footer class="credits">
       <span>Proyecto base: FreeMoCap · AGPLv3</span>
-      <span>Jossue Hermel Gallardo Toro · Ingeniería en Sistemas de Información</span>
+      <button id="credits-open" class="credits-link" type="button">Créditos completos y licencia</button>
     </footer>
+
+    <dialog id="credits-dialog" class="credits-dialog" aria-labelledby="credits-title">
+      <div class="credits-dialog-header">
+        <div>
+          <span class="eyebrow">PUCE · VINCULACIÓN CON LA COMUNIDAD · 2026</span>
+          <h2 id="credits-title">Créditos del proyecto</h2>
+        </div>
+        <button id="credits-close" class="dialog-close" type="button" aria-label="Cerrar créditos">×</button>
+      </div>
+      <div class="credits-dialog-body">
+        <section aria-labelledby="credits-team-title">
+          <h3 id="credits-team-title">Equipo</h3>
+          <dl class="credits-details">
+            <div>
+              <dt>Estudiantes</dt>
+              <dd id="credits-students">Jossue Hermel Gallardo Toro · Kevin Lima Blanco</dd>
+            </div>
+            <div>
+              <dt>Tutor</dt>
+              <dd id="credits-tutor">Francisco Rodríguez Clavijo</dd>
+            </div>
+          </dl>
+          <p id="credits-description">
+            Proyecto de Vinculación con la Comunidad de la Dirección de Vinculación con la Colectividad de la
+            Pontificia Universidad Católica del Ecuador, desarrollado en la Carrera de Ingeniería en Sistemas de
+            Información durante el año 2026.
+          </p>
+        </section>
+        <section aria-labelledby="credits-origin-title">
+          <h3 id="credits-origin-title">Proyecto original</h3>
+          <p>
+            Esta adaptación se basa en
+            <a href="https://github.com/freemocap/freemocap" target="_blank" rel="noopener noreferrer">FreeMoCap — Free Motion Capture for Everyone</a>.
+            Consulte también su <a href="https://freemocap.org" target="_blank" rel="noopener noreferrer">sitio oficial</a>.
+          </p>
+        </section>
+        <section aria-labelledby="credits-license-title">
+          <h3 id="credits-license-title">GNU Affero General Public License, versión 3 (AGPLv3)</h3>
+          <pre id="credits-license" class="license-text" tabindex="0">Cargando licencia completa…</pre>
+        </section>
+      </div>
+    </dialog>
 
     <canvas id="capture-canvas" hidden></canvas>
     <script src="/static/app.js"></script>

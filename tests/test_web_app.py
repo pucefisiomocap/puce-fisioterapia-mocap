@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -79,6 +81,23 @@ def test_web_app_factory_expone_inicio_y_estado():
     controller.set_module("rehab")
     assert controller.snapshot()["metrics"][3]["label"] == "Rango terapéutico"
     controller.close()
+
+
+def test_web_expone_creditos_completos_y_licencia():
+    with TestClient(create_app()) as client:
+        response = client.get("/api/credits")
+        page = client.get("/").text
+
+    credits = response.json()
+    assert response.status_code == 200
+    assert credits["students"] == ["Jossue Hermel Gallardo Toro", "Kevin Lima Blanco"]
+    assert credits["tutor"] == "Francisco Rodríguez Clavijo"
+    assert "Dirección de Vinculación con la Colectividad" in credits["project_description"]
+    assert credits["original_project"]["repository"] == "https://github.com/freemocap/freemocap"
+    license_file = Path(__file__).resolve().parents[1] / "LICENSE"
+    assert credits["license_text"] == license_file.read_text(encoding="utf-8")
+    assert 'id="credits-open"' in page
+    assert 'id="credits-dialog"' in page
 
 
 def test_web_controller_pesas_registra_y_exporta_reporte(monkeypatch, tmp_path):

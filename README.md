@@ -22,9 +22,9 @@ Este fork mantiene la licencia AGPLv3 y conserva la trazabilidad hacia el proyec
 - Programa: Vinculación con la Comunidad
 - Contraparte: Fe y Alegría Ecuador
 - Año: 2026
-- Estudiante desarrollador: Jossue Hermel Gallardo Toro
+- Estudiantes desarrolladores: Jossue Hermel Gallardo Toro y Kevin Lima Blanco
 - Carrera: Ingeniería en Sistemas de Información
-- Tutor: RODRIGUEZ CLAVIJO FRANCISCO
+- Tutor: Francisco Rodríguez Clavijo
 
 Los logos institucionales usados por las interfaces están disponibles en `assets/`:
 

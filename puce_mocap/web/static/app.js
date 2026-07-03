@@ -42,6 +42,18 @@ async function fetchState() {
   return response.json();
 }
 
+async function loadCredits() {
+  const response = await fetch("/api/credits", { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("No se pudieron cargar los créditos y la licencia.");
+  }
+  const credits = await response.json();
+  $("credits-students").textContent = credits.students.join(" · ");
+  $("credits-tutor").textContent = credits.tutor;
+  $("credits-description").textContent = credits.project_description;
+  $("credits-license").textContent = credits.license_text;
+}
+
 function setStatus(message, type = "normal") {
   $("status-text").textContent = message;
   $("status-dot").classList.toggle("live", type === "live");
@@ -575,6 +587,15 @@ function bindEvents() {
   $("gait-start").addEventListener("click", () => run("/api/gait/start"));
   $("gait-stop").addEventListener("click", () => run("/api/gait/stop"));
   $("gait-reset").addEventListener("click", () => run("/api/gait/reset", undefined, true));
+
+  $("credits-open").addEventListener("click", () => {
+    const dialog = $("credits-dialog");
+    dialog.showModal();
+    loadCredits().catch((error) => {
+      $("credits-license").textContent = error.message;
+    });
+  });
+  $("credits-close").addEventListener("click", () => $("credits-dialog").close());
 
   window.addEventListener("beforeunload", stopMediaTracks);
 }
