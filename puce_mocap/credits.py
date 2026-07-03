@@ -19,6 +19,7 @@ PROJECT_DESCRIPTION = (
 FREEMOCAP_NAME = "FreeMoCap — Free Motion Capture for Everyone"
 FREEMOCAP_REPOSITORY = "https://github.com/freemocap/freemocap"
 FREEMOCAP_WEBSITE = "https://freemocap.org"
+SOURCE_CODE_REPOSITORY = "https://github.com/pucefisiomocap/puce-fisioterapia-mocap"
 LICENSE_NAME = "GNU Affero General Public License, versión 3 (AGPLv3)"
 
 
@@ -43,6 +44,7 @@ def credits_payload() -> dict[str, Any]:
             "repository": FREEMOCAP_REPOSITORY,
             "website": FREEMOCAP_WEBSITE,
         },
+        "source_code_repository": SOURCE_CODE_REPOSITORY,
         "license_name": LICENSE_NAME,
         "license_text": license_text(),
     }

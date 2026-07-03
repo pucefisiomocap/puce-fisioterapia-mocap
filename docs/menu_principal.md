@@ -31,8 +31,8 @@ FreeMoCap original permanece aislado y se abre mediante `QProcess`. La ejecució
 2. Revisar el paciente y los rangos configurados.
 3. Pulsar `Iniciar cámara` o importar una sesión FreeMoCap.
 4. Pulsar `Iniciar ejercicio` o `Iniciar sesión` para comenzar el registro.
-5. Finalizar y guardar el reporte.
+5. Finalizar y guardar los reportes CSV y PDF.
 
 ## Cierre seguro
 
-Al volver al menú o cerrar la aplicación se guardan las sesiones con datos, se detiene el worker, se libera la cámara y se terminan procesos secundarios. Los reportes y perfiles reales se guardan en el directorio local de la aplicación, fuera de Git.
+Al volver al menú o cerrar la aplicación se guardan las sesiones con datos en CSV y PDF, se detiene el worker, se libera la cámara y se terminan procesos secundarios. Los reportes y perfiles reales se guardan en el directorio local de la aplicación, fuera de Git.

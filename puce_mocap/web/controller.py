@@ -25,6 +25,7 @@ from puce_mocap.gait_analyzer import analizar_marcha
 from puce_mocap.gait_session import GaitSession
 from puce_mocap.gait_temporal import GaitCycleAnalyzer
 from puce_mocap.movement import AngleRange, MovementDefinition
+from puce_mocap.pdf_reports import export_pdf_report
 from puce_mocap.rehab_analyzer import (
     ORIENTACION_RECOMENDADA,
     WristRotationCalibrator,
@@ -110,7 +111,7 @@ class PuceWebController:
         self.module = "weights"
         self.source_mode = "none"
         self.status = "Sistema listo. Active la cámara o cargue una sesión procesada."
-        self.last_report_path: str | None = None
+        self.last_report_paths: dict[str, str] = {}
         self.metrics: list[dict[str, str]] = []
         self.browser_camera_active = False
         self.browser_camera_label = ""
@@ -191,10 +192,14 @@ class PuceWebController:
                     "length_unit": self.provider.length_unit,
                     "filename": self.provider.data_path.name,
                 }
-            report = None
-            if self.last_report_path:
-                path = Path(self.last_report_path)
-                report = {"available": path.is_file(), "filename": path.name}
+            report_files = {
+                file_format: {"available": Path(path).is_file(), "filename": Path(path).name}
+                for file_format, path in self.last_report_paths.items()
+            }
+            report = {
+                "available": any(file["available"] for file in report_files.values()),
+                "files": report_files,
+            } if report_files else None
             return {
                 "module": self.module,
                 "module_label": MODULES[self.module],
@@ -361,12 +366,13 @@ class PuceWebController:
             path = export_weight_sessions(
                 ({**session.exportar_resumen(), **self.weight_patient} for session in self.weight_sessions.values())
             )
-            self.last_report_path = str(path)
+            pdf_path = export_pdf_report(path)
+            self.last_report_paths = {"csv": str(path), "pdf": str(pdf_path)}
             self.weight_dirty = False
             self.weight_recording = False
             self.weight_session_id = uuid4().hex
             self._reset_weight_sessions()
-            self.status = f"Reporte guardado en {path}."
+            self.status = f"Reportes CSV y PDF guardados en {path.parent}."
 
     def configure_rehab(self, payload: Mapping[str, Any]) -> None:
         with self._lock:
@@ -477,11 +483,14 @@ class PuceWebController:
             normalized = normalizar_perfil_paciente(self.rehab_profile)
             return (json.dumps(normalized, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
-    def latest_report(self) -> Path:
+    def latest_report(self, file_format: str = "csv") -> Path:
         with self._lock:
-            if not self.last_report_path:
-                raise WebActionError("Todavía no hay un reporte disponible.")
-            path = Path(self.last_report_path)
+            if file_format not in {"csv", "pdf"}:
+                raise WebActionError("Formato de reporte no válido. Use csv o pdf.")
+            report_path = self.last_report_paths.get(file_format)
+            if not report_path:
+                raise WebActionError(f"Todavía no hay un reporte {file_format.upper()} disponible.")
+            path = Path(report_path)
             if not path.is_file():
                 raise WebActionError("El último reporte ya no está disponible.")
             return path
@@ -494,13 +503,14 @@ class PuceWebController:
             path = export_rehab_sessions(
                 (session.exportar_resumen() for session in self.rehab_sessions.values()), self.rehab_profile
             )
-            self.last_report_path = str(path)
+            pdf_path = export_pdf_report(path)
+            self.last_report_paths = {"csv": str(path), "pdf": str(pdf_path)}
             self.rehab_dirty = False
             self.rehab_recording = False
             self.rehab_session_id = uuid4().hex
             self.rehab_evaluated_side = None
             self._rebuild_rehab_sessions()
-            self.status = f"Reporte guardado en {path}."
+            self.status = f"Reportes CSV y PDF guardados en {path.parent}."
 
     def configure_gait(self, payload: Mapping[str, Any]) -> None:
         with self._lock:
@@ -524,9 +534,10 @@ class PuceWebController:
                 self.status = "Sesión sin datos. " + DISCLAIMER
                 return
             path = export_gait_session(self.gait_session.exportar_resumen())
-            self.last_report_path = str(path)
+            pdf_path = export_pdf_report(path)
+            self.last_report_paths = {"csv": str(path), "pdf": str(pdf_path)}
             self.gait_exported = True
-            self.status = f"Sesión finalizada. Reporte: {path}. {DISCLAIMER}"
+            self.status = f"Sesión finalizada. Reportes CSV y PDF guardados en {path.parent}. {DISCLAIMER}"
 
     def reset_gait(self) -> None:
         with self._lock:

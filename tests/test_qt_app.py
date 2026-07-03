@@ -3,6 +3,7 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
+import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QComboBox, QPlainTextEdit, QPushButton
@@ -15,6 +16,12 @@ from puce_mocap.skeleton_frame import SkeletonFrame
 
 def app():
     return QApplication.instance() or QApplication([])
+
+
+@pytest.fixture(autouse=True)
+def camara_qt_determinista(monkeypatch):
+    """Evita consultar hardware real durante las pruebas de widgets."""
+    monkeypatch.setattr("puce_mocap.qt_app._detected_cameras", lambda: [("Cámara de prueba", 0)])
 
 
 def test_menu_emite_navegacion_con_click_de_mouse():
@@ -45,6 +52,7 @@ def test_menu_abre_creditos_completos_y_licencia():
     assert "Kevin Lima Blanco" in details.text()
     assert "Francisco Rodríguez Clavijo" in details.text()
     assert "Dirección de Vinculación con la Colectividad" in details.text()
+    assert "pucefisiomocap/puce-fisioterapia-mocap" in details.text()
     license_file = Path(__file__).resolve().parents[1] / "LICENSE"
     assert license_view.toPlainText() == license_file.read_text(encoding="utf-8")
     page.credits_dialog.close()

@@ -83,6 +83,7 @@ dependencies = [
     "pydantic==2.*",
     "PySide6>=6.6, <6.8",
     "packaging===23.2",
+    "reportlab>=4.2,<5",
 ]
 
 requires-python = ">=3.10,<3.13"
@@ -90,7 +91,7 @@ requires-python = ">=3.10,<3.13"
 [project.optional-dependencies]
 puce = ["mediapipe>=0.10.14,<0.11"]
 web = ["fastapi>=0.115,<0.116", "httpx>=0.27,<1", "uvicorn[standard]>=0.30,<1"]
-dev = ["black", "bumpver", "isort", "pip-tools", "pytest", "pytest-cov", "flake8", "flake8-bugbear", "flake8-bandit"]
+dev = ["black", "bumpver", "isort", "pip-tools", "pytest", "pytest-cov", "flake8", "flake8-bugbear", "flake8-bandit", "pdfplumber", "pypdf>=6,<7"]
 
 [project.urls]
 Homepage = "https://freemocap.org"

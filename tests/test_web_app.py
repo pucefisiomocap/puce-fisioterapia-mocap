@@ -94,6 +94,7 @@ def test_web_expone_creditos_completos_y_licencia():
     assert credits["tutor"] == "Francisco Rodríguez Clavijo"
     assert "Dirección de Vinculación con la Colectividad" in credits["project_description"]
     assert credits["original_project"]["repository"] == "https://github.com/freemocap/freemocap"
+    assert credits["source_code_repository"] == "https://github.com/pucefisiomocap/puce-fisioterapia-mocap"
     license_file = Path(__file__).resolve().parents[1] / "LICENSE"
     assert credits["license_text"] == license_file.read_text(encoding="utf-8")
     assert 'id="credits-open"' in page
@@ -112,8 +113,15 @@ def test_web_controller_pesas_registra_y_exporta_reporte(monkeypatch, tmp_path):
 
     assert state["weights"]["recording"] is True
     assert state["metrics"][0]["value"] == "90.0°"
-    assert saved == {"available": True, "filename": "pesas_v2.csv"}
+    assert saved == {
+        "available": True,
+        "files": {
+            "csv": {"available": True, "filename": "pesas_v2.csv"},
+            "pdf": {"available": True, "filename": "pesas_v2.pdf"},
+        },
+    }
     assert tmp_path.joinpath("reports", "pesas_v2.csv").is_file()
+    assert tmp_path.joinpath("reports", "pesas_v2.pdf").is_file()
     controller.close()
 
 
@@ -133,7 +141,9 @@ def test_web_controller_rehabilitacion_y_marcha_exportan(monkeypatch, tmp_path):
     controller.stop_gait()
 
     assert tmp_path.joinpath("reports", "rehabilitacion_v3.csv").is_file()
+    assert tmp_path.joinpath("reports", "rehabilitacion_v3.pdf").is_file()
     assert tmp_path.joinpath("reports", "marcha_v2.csv").is_file()
+    assert tmp_path.joinpath("reports", "marcha_v2.pdf").is_file()
     controller.close()
 
 
@@ -212,13 +222,18 @@ def test_web_perfil_y_reporte_se_descargan_sin_rutas_del_servidor(monkeypatch, t
             headers={"Content-Type": "application/json"},
         )
         downloaded_profile = client.get("/api/rehab/profile/download")
-        downloaded_report = client.get("/api/reports/latest")
+        downloaded_csv = client.get("/api/reports/latest?format=csv")
+        downloaded_pdf = client.get("/api/reports/latest?format=pdf")
 
     assert uploaded.status_code == 200
     assert downloaded_profile.status_code == 200
     assert downloaded_profile.headers["content-disposition"].endswith('"perfil_rehabilitacion.json"')
-    assert downloaded_report.status_code == 200
-    assert "attachment; filename=\"pesas_v2.csv\"" in downloaded_report.headers["content-disposition"]
+    assert downloaded_csv.status_code == 200
+    assert "attachment; filename=\"pesas_v2.csv\"" in downloaded_csv.headers["content-disposition"]
+    assert downloaded_pdf.status_code == 200
+    assert downloaded_pdf.headers["content-type"] == "application/pdf"
+    assert downloaded_pdf.content.startswith(b"%PDF")
+    assert "attachment; filename=\"pesas_v2.pdf\"" in downloaded_pdf.headers["content-disposition"]
 
 
 def test_web_rehabilitacion_explica_inicio_y_no_exige_cuerpo_entero():

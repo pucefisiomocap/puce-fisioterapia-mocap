@@ -44,6 +44,7 @@ from puce_mocap.credits import (
     FREEMOCAP_WEBSITE,
     LICENSE_NAME,
     PROJECT_DESCRIPTION,
+    SOURCE_CODE_REPOSITORY,
     STUDENTS,
     TUTOR,
     license_text,
@@ -67,6 +68,7 @@ from puce_mocap.rehab_analyzer import (
     resolver_lado_ejercicio,
 )
 from puce_mocap.movement import AngleRange, MovementDefinition
+from puce_mocap.pdf_reports import export_pdf_report
 from puce_mocap.rehab_profiles import (
     cargar_perfil_paciente,
     crear_perfil_demo,
@@ -169,6 +171,8 @@ class CreditsDialog(QDialog):
             + f"<br><br><b>Proyecto original</b><br>"
             + f'<a href="{FREEMOCAP_REPOSITORY}">{FREEMOCAP_NAME}</a> · '
             + f'<a href="{FREEMOCAP_WEBSITE}">Sitio oficial</a>'
+            + f'<br><br><b>Código fuente de esta adaptación</b><br>'
+            + f'<a href="{SOURCE_CODE_REPOSITORY}">pucefisiomocap/puce-fisioterapia-mocap</a>'
         )
         details.setObjectName("creditsDetails")
         details.setWordWrap(True)
@@ -603,7 +607,7 @@ class WeightsPage(AnalysisPage):
         reset = QPushButton("Reiniciar ejercicio")
         reset.clicked.connect(self.reset_current)
         self.controls.addWidget(reset)
-        save = QPushButton("Finalizar y guardar reporte")
+        save = QPushButton("Finalizar y guardar CSV + PDF")
         save.clicked.connect(self.save_and_restart)
         self.controls.addWidget(save)
         self.controls.addStretch()
@@ -686,6 +690,7 @@ class WeightsPage(AnalysisPage):
         path = export_weight_sessions(
             ({**session.exportar_resumen(), **patient} for session in self.sessions.values())
         )
+        export_pdf_report(path)
         self.dirty = False
         return path
 
@@ -694,7 +699,7 @@ class WeightsPage(AnalysisPage):
         self.start_button.setText("Iniciar ejercicio")
         path = self.finalize()
         if path is not None:
-            self.status.setText(f"Reporte guardado en {path}.")
+            self.status.setText(f"Reportes CSV y PDF guardados en {path.parent}.")
         self.session_id = uuid4().hex
         self.sessions = {
             name: ExerciseSession(name, session_id=self.session_id, definicion=self.definitions[name])
@@ -828,7 +833,7 @@ class RehabPage(AnalysisPage):
         reset = QPushButton("Reiniciar ejercicio")
         reset.clicked.connect(self.reset_current)
         self.controls.addWidget(reset)
-        save = QPushButton("Finalizar y guardar reporte")
+        save = QPushButton("Finalizar y guardar CSV + PDF")
         save.clicked.connect(self.save_and_restart)
         self.controls.addWidget(save)
         self.controls.addStretch()
@@ -1028,6 +1033,7 @@ class RehabPage(AnalysisPage):
         path = export_rehab_sessions(
             (session.exportar_resumen() for session in self.sessions.values()), self.profile
         )
+        export_pdf_report(path)
         self.dirty = False
         return path
 
@@ -1036,7 +1042,7 @@ class RehabPage(AnalysisPage):
         self.start_button.setText("Iniciar ejercicio")
         path = self.finalize()
         if path is not None:
-            self.status.setText(f"Reporte guardado en {path}.")
+            self.status.setText(f"Reportes CSV y PDF guardados en {path.parent}.")
         self.session_id = uuid4().hex
         self.rehab_evaluated_side = None
         self._rebuild_sessions()
@@ -1162,7 +1168,12 @@ class GaitPage(AnalysisPage):
     def stop_session(self) -> None:
         self.recording = False
         path = self.finalize()
-        self.status.setText((f"Sesión finalizada. Reporte: {path}. " if path else "Sesión sin datos. ") + DISCLAIMER)
+        message = (
+            f"Sesión finalizada. Reportes CSV y PDF guardados en {path.parent}. "
+            if path
+            else "Sesión sin datos. "
+        )
+        self.status.setText(message + DISCLAIMER)
 
     def reset_session(self) -> None:
         self.session = GaitSession()
@@ -1174,6 +1185,7 @@ class GaitPage(AnalysisPage):
         if self.exported or self.session.frames_validos == 0:
             return None
         path = export_gait_session(self.session.exportar_resumen())
+        export_pdf_report(path)
         self.exported = True
         return path
 

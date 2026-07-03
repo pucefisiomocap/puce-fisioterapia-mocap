@@ -112,7 +112,10 @@
         <div class="status-strip" role="status" aria-live="polite">
           <span id="status-dot" class="status-dot"></span>
           <span id="status-text">Sistema listo.</span>
-          <a id="report-download" class="report-link" href="/api/reports/latest" hidden>Descargar reporte</a>
+          <span id="report-downloads" class="report-links" hidden>
+            <a id="report-download-csv" class="report-link" href="/api/reports/latest?format=csv">Descargar CSV</a>
+            <a id="report-download-pdf" class="report-link" href="/api/reports/latest?format=pdf">Descargar PDF</a>
+          </span>
         </div>
       </section>
 
@@ -290,6 +293,10 @@
             Esta adaptación se basa en
             <a href="https://github.com/freemocap/freemocap" target="_blank" rel="noopener noreferrer">FreeMoCap — Free Motion Capture for Everyone</a>.
             Consulte también su <a href="https://freemocap.org" target="_blank" rel="noopener noreferrer">sitio oficial</a>.
+          </p>
+          <p>
+            El código fuente de esta adaptación está disponible en
+            <a href="https://github.com/pucefisiomocap/puce-fisioterapia-mocap" target="_blank" rel="noopener noreferrer">pucefisiomocap/puce-fisioterapia-mocap</a>.
           </p>
         </section>
         <section aria-labelledby="credits-license-title">

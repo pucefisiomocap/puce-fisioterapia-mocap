@@ -204,11 +204,12 @@ def create_app(controller: PuceWebController | None = None) -> FastAPI:
         return run_action(ctrl().reset_gait)
 
     @app.get("/api/reports/latest")
-    def latest_report() -> FileResponse:
+    def latest_report(format: str = "csv") -> FileResponse:
         try:
-            path = ctrl().latest_report()
+            path = ctrl().latest_report(format)
         except WebActionError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
-        return FileResponse(path, media_type="text/csv", filename=path.name)
+        media_type = "application/pdf" if format == "pdf" else "text/csv"
+        return FileResponse(path, media_type=media_type, filename=path.name)
 
     return app

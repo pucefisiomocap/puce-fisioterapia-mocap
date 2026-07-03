@@ -316,10 +316,13 @@ function renderState(state, forceHydrate = false) {
   updateSource(state);
   setStatus(state.status, moduleRecording(state) ? "live" : "normal");
   const report = state.last_report;
-  $("report-download").hidden = !report?.available;
-  if (report?.available) {
-    $("report-download").textContent = `Descargar ${report.filename}`;
-  }
+  $("report-downloads").hidden = !report?.available;
+  ["csv", "pdf"].forEach((format) => {
+    const file = report?.files?.[format];
+    const link = $(`report-download-${format}`);
+    link.hidden = !file?.available;
+    if (file?.available) link.textContent = `Descargar ${format.toUpperCase()}`;
+  });
 }
 
 function weightsPayload() {

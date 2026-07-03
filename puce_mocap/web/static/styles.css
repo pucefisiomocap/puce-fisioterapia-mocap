@@ -539,8 +539,13 @@ label {
   background: var(--red);
 }
 
-.report-link {
+.report-links {
   margin-left: auto;
+  display: flex;
+  gap: 12px;
+}
+
+.report-link {
   color: var(--teal-dark);
   font-weight: 700;
 }

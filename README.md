@@ -9,6 +9,7 @@ Este repositorio es un fork y adaptación académica de **FreeMoCap — Free Mot
 ## Créditos y Origen
 
 - Proyecto base: **FreeMoCap — Free Motion Capture for Everyone**
+- Código fuente de esta adaptación: [pucefisiomocap/puce-fisioterapia-mocap](https://github.com/pucefisiomocap/puce-fisioterapia-mocap)
 - Repositorio original: https://github.com/freemocap/freemocap
 - Sitio oficial: https://freemocap.org
 - Autores: Jon Matthis y equipo FreeMoCap
@@ -75,7 +76,7 @@ Ejercicios implementados:
 
 ### Módulo 2: Rehabilitación fisioterapéutica
 
-Ejercicios terapéuticos con perfiles JSON v2, rangos separados de inicio/objetivo, sesión acumulada y reporte CSV. La interfaz permite editar datos del paciente, lado, repeticiones y rangos antes de comenzar. Los perfiles v1 se migran en memoria y la rotación de muñeca requiere calibración neutral.
+Ejercicios terapéuticos con perfiles JSON v2, rangos separados de inicio/objetivo, sesión acumulada y reportes CSV y PDF. La interfaz permite editar datos del paciente, lado, repeticiones y rangos antes de comenzar. Los perfiles v1 se migran en memoria y la rotación de muñeca requiere calibración neutral.
 
 Comando principal del producto de Semana 5:
 
@@ -121,7 +122,7 @@ Metricas implementadas:
 - PySide6 para interfaz, controles, mouse y escalado HiDPI
 - Git y GitHub
 - pytest
-- JSON y CSV para perfiles ficticios y reportes
+- JSON para perfiles ficticios; CSV y PDF para reportes
 
 ## Instalacion Base de FreeMoCap
 
@@ -208,7 +209,7 @@ Las sesiones FreeMoCap y los perfiles de rehabilitación se transfieren como arc
 
 - La sesión se carga seleccionando `*_body_3d_xyz.npy`.
 - El perfil JSON se importa y descarga desde el navegador.
-- Los reportes CSV se descargan desde la interfaz.
+- Los reportes se descargan desde la interfaz en CSV para análisis tabular o en PDF para lectura humana.
 - No se solicitan ni se muestran rutas del sistema de archivos del servidor.
 
 ### Despliegue inicial en VPS
@@ -326,7 +327,7 @@ Pendiente manual:
 
 ## Datos locales y reportes
 
-Los CSV v2 se guardan en el directorio local de datos de la aplicacion, no dentro de la instalacion. En pruebas o despliegues puede definirse `PUCE_MOCAP_DATA_DIR`. Los reportes incluyen nombre y lesion por decision del proyecto, por lo que deben tratarse como datos sensibles y nunca subirse a Git.
+Los CSV v2 históricos y los PDF de la sesión más reciente se guardan en el directorio local de datos de la aplicación, no dentro de la instalación. En pruebas o despliegues puede definirse `PUCE_MOCAP_DATA_DIR`. Los reportes incluyen nombre y lesión por decisión del proyecto, por lo que deben tratarse como datos sensibles y nunca subirse a Git.
 
 ## Estado por Semana
 
