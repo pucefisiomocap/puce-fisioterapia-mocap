@@ -1,7 +1,9 @@
+import csv
 from pathlib import Path
 
 import numpy as np
 import pytest
+from pypdf import PdfReader
 
 pytest.importorskip("fastapi")
 
@@ -62,7 +64,9 @@ class FakePoseProcessor:
 
 def test_web_app_factory_expone_inicio_y_estado():
     with TestClient(create_app()) as client:
-        assert client.get("/").status_code == 200
+        home_response = client.get("/")
+        assert home_response.status_code == 200
+        static_response = client.get("/static/app.js")
         info_response = client.get("/api/app-info")
         info = info_response.json()
         state = client.get("/api/state").json()
@@ -75,6 +79,8 @@ def test_web_app_factory_expone_inicio_y_estado():
     assert state["module"] == "weights"
     assert state["source"]["mode"] == "none"
     assert info_response.headers["cache-control"] == "no-store"
+    assert home_response.headers["cache-control"] == "no-store"
+    assert static_response.headers["cache-control"] == "no-store"
     assert "camera=(self)" in info_response.headers["permissions-policy"]
 
     controller = PuceWebController()
@@ -122,6 +128,61 @@ def test_web_controller_pesas_registra_y_exporta_reporte(monkeypatch, tmp_path):
     }
     assert tmp_path.joinpath("reports", "pesas_v2.csv").is_file()
     assert tmp_path.joinpath("reports", "pesas_v2.pdf").is_file()
+    controller.close()
+
+
+def test_web_conserva_umbrales_personalizados_y_exporta_12_repeticiones(monkeypatch, tmp_path):
+    monkeypatch.setenv("PUCE_MOCAP_DATA_DIR", str(tmp_path))
+    controller = PuceWebController()
+    controller.configure_weights({
+        "exercise": "Sentadilla",
+        "ranges": {"start_min": 150, "start_max": 175, "target_min": 65, "target_max": 95},
+    })
+    session = controller.weight_sessions["Sentadilla"]
+    session.total_frames = 600
+    session.frames_evaluables_forma = 400
+    session.frames_correctos = 350
+    session.repeticiones = 12
+    controller.weight_dirty = True
+
+    controller.save_weights()
+    state = controller.snapshot()
+
+    assert state["weights"]["definitions"]["Sentadilla"] == {
+        "start_min": 150.0,
+        "start_max": 175.0,
+        "target_min": 65.0,
+        "target_max": 95.0,
+    }
+    with tmp_path.joinpath("reports", "pesas_v2.csv").open(newline="", encoding="utf-8") as stream:
+        row = next(csv.DictReader(stream))
+    assert row["angulo_minimo_objetivo"] == "65.0"
+    assert row["repeticiones"] == "12"
+    pdf_text = "\n".join(
+        page.extract_text() for page in PdfReader(tmp_path / "reports" / "pesas_v2.pdf").pages
+    )
+    assert "Ángulo objetivo mínimo\n65.0 grados" in pdf_text
+    assert "Repeticiones\n12" in pdf_text
+    controller.close()
+
+
+def test_web_conserva_rango_rehab_personalizado_al_cambiar_de_modulo():
+    controller = PuceWebController()
+    controller.set_module("rehab")
+    controller.configure_rehab({
+        "exercise": "abduccion_hombro",
+        "config": {
+            "rango_inicio": {"minimo": 0, "maximo": 20},
+            "rango_objetivo": {"minimo": 70, "maximo": 120},
+            "repeticiones_objetivo": 8,
+            "lado": "auto",
+        },
+    })
+    controller.set_module("weights")
+    controller.set_module("rehab")
+
+    config = controller.snapshot()["rehab"]["profile"]["ejercicios"]["abduccion_hombro"]
+    assert config["rango_objetivo"] == {"minimo": 70.0, "maximo": 120.0}
     controller.close()
 
 

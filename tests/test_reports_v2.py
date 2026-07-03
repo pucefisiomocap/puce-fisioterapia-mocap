@@ -4,6 +4,8 @@ from pypdf import PdfReader
 
 from puce_mocap.pdf_reports import export_pdf_report
 from puce_mocap.reports_v2 import (
+    INSTITUTIONAL_FIELDS,
+    WEIGHTS_FIELDS,
     export_rehab_sessions,
     export_weight_sessions,
     sanitize_csv_value,
@@ -76,6 +78,68 @@ def test_reporte_pdf_es_legible_y_solo_incluye_la_sesion_mas_reciente(tmp_path):
     assert "ANTERIOR" not in text
     assert "pucefisiomocap/puce-fisioterapia-mocap" in text
     assert "no sustituye la evaluación de un fisioterapeuta" in text
+
+
+def test_migra_csv_antiguo_y_pdf_asocia_umbrales_y_repeticiones_correctamente(tmp_path):
+    csv_path = tmp_path / "pesas_v2.csv"
+    legacy_fields = INSTITUTIONAL_FIELDS + [
+        "session_id", "fecha", "fuente_datos", "ejercicio", "total_frames",
+        "frames_evaluables_forma", "frames_correctos", "porcentaje_correcto",
+        "repeticiones", "observacion",
+    ]
+    with csv_path.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=legacy_fields)
+        writer.writeheader()
+        writer.writerow({"session_id": "LEGACY", "ejercicio": "Sentadilla", "repeticiones": 2})
+    corrupted_new_row = {
+        "session_id": "CORRUPTED-BY-OLD-HEADER",
+        "codigo_paciente": "PAC-RECOVERED",
+        "nombre_paciente": "Fila recuperada",
+        "ejercicio": "Sentadilla",
+        "total_frames": 1,
+        "repeticiones": 7,
+    }
+    with csv_path.open("a", newline="", encoding="utf-8") as stream:
+        csv.writer(stream).writerow([corrupted_new_row.get(field, "") for field in WEIGHTS_FIELDS])
+
+    export_weight_sessions(
+        [{
+            "session_id": "S-12",
+            "fecha": "2026-07-03T12:00:00",
+            "fuente_datos": "navegador_mediapipe",
+            "codigo_paciente": "PAC-012",
+            "nombre_paciente": "Paciente ficticio",
+            "lesion": "Seguimiento ficticio",
+            "observaciones_paciente": "Sin datos reales",
+            "ejercicio": "Sentadilla",
+            "angulo_minimo_inicio": 150,
+            "angulo_maximo_inicio": 175,
+            "angulo_minimo_objetivo": 65,
+            "angulo_maximo_objetivo": 95,
+            "total_frames": 600,
+            "frames_evaluables_forma": 400,
+            "frames_correctos": 350,
+            "porcentaje_correcto": 87.5,
+            "repeticiones": 12,
+        }],
+        csv_path,
+    )
+
+    with csv_path.open(newline="", encoding="utf-8") as stream:
+        reader = csv.DictReader(stream)
+        rows = list(reader)
+    assert reader.fieldnames == WEIGHTS_FIELDS
+    assert rows[1]["codigo_paciente"] == "PAC-RECOVERED"
+    assert rows[1]["repeticiones"] == "7"
+    assert rows[-1]["codigo_paciente"] == "PAC-012"
+    assert rows[-1]["angulo_minimo_objetivo"] == "65"
+    assert rows[-1]["repeticiones"] == "12"
+
+    text = "\n".join(page.extract_text() for page in PdfReader(export_pdf_report(csv_path)).pages)
+    assert "Paciente ficticio" in text
+    assert "Ángulo objetivo mínimo\n65 grados" in text
+    assert "Repeticiones\n12" in text
+    assert "Repeticiones\n150" not in text
 
 
 def test_comparacion_rehab_busca_mismo_paciente_y_ejercicio(tmp_path):

@@ -32,8 +32,44 @@ def sanitize_csv_value(value: Any) -> Any:
     return value
 
 
+def _rows_with_current_schema(path: Path, fields: list[str]) -> tuple[list[str], list[dict[str, str]]]:
+    """Lee CSV históricos y recupera filas escritas con una cabecera anterior."""
+    with path.open(newline="", encoding="utf-8") as stream:
+        raw_rows = list(csv.reader(stream))
+    if not raw_rows:
+        return [], []
+    header = raw_rows[0]
+    rows = []
+    for values in raw_rows[1:]:
+        # Una fila nueva pudo haberse añadido debajo de una cabecera antigua.
+        # Su cantidad de valores permite reconstruirla con el esquema actual.
+        schema = fields if len(values) == len(fields) else header
+        rows.append(dict(zip(schema, values)))
+    return header, rows
+
+
+def _ensure_csv_schema(path: Path, fields: list[str]) -> None:
+    """Migra de forma atómica un CSV acumulativo cuando cambian sus columnas."""
+    if not path.exists() or path.stat().st_size == 0:
+        return
+    header, rows = _rows_with_current_schema(path, fields)
+    if header == fields:
+        return
+    temporary = path.with_name(f".{path.name}.migrating")
+    try:
+        with temporary.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
+            writer.writeheader()
+            for row in rows:
+                writer.writerow({field: row.get(field, "") for field in fields})
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def _append_rows(path: Path, fields: list[str], rows: Iterable[Mapping[str, Any]]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
+    _ensure_csv_schema(path, fields)
     write_header = not path.exists() or path.stat().st_size == 0
     with path.open("a", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
@@ -77,6 +113,7 @@ def export_weight_sessions(summaries: Iterable[Mapping[str, Any]], path: str | P
 def _previous_rehab_row(path: Path, code: str, exercise: str) -> dict[str, str] | None:
     if not path.exists() or path.stat().st_size == 0:
         return None
+    _ensure_csv_schema(path, REHAB_FIELDS)
     with path.open(newline="", encoding="utf-8") as stream:
         rows = list(csv.DictReader(stream))
     return next(

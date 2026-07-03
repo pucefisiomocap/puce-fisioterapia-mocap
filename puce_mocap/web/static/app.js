@@ -17,6 +17,7 @@ let cameraLoopRunning = false;
 let frameInFlight = false;
 let lastFrameSentAt = 0;
 let sourcePanel = "camera";
+let actionQueue = Promise.resolve();
 
 async function jsonRequest(path, payload = undefined) {
   const options = payload === undefined
@@ -367,17 +368,25 @@ function rehabPayload() {
   };
 }
 
-async function run(path, payload = undefined, forceHydrate = false) {
+async function executeRun(path, payload = undefined, forceHydrate = false) {
   try {
     renderState(await jsonRequest(path, payload), forceHydrate);
   } catch (error) {
     try {
-      renderState(await fetchState(), true);
+      // Conserva los valores editados si el servidor rechaza la acción.
+      // El estado general se actualiza, pero el formulario no vuelve a sus valores predeterminados.
+      renderState(await fetchState());
     } catch (_stateError) {
       // Se conserva el error original de la acción.
     }
     setStatus(error.message, "error");
   }
+}
+
+function run(path, payload = undefined, forceHydrate = false) {
+  const action = () => executeRun(path, payload, forceHydrate);
+  actionQueue = actionQueue.then(action, action);
+  return actionQueue;
 }
 
 function selectSourcePanel(panel) {
