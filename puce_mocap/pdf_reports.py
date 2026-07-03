@@ -13,6 +13,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (
+    Image,
     KeepTogether,
     Paragraph,
     SimpleDocTemplate,
@@ -23,6 +24,7 @@ from reportlab.platypus import (
 
 from puce_mocap.credits import SOURCE_CODE_REPOSITORY, STUDENTS, TUTOR
 from puce_mocap.reports_v2 import INSTITUTIONAL
+from puce_mocap.resources import resource_file
 
 
 REPORT_CONFIG = {
@@ -220,10 +222,10 @@ def export_pdf_report(csv_path: str | Path, path: str | Path | None = None) -> P
 
     document = SimpleDocTemplate(
         str(output), pagesize=A4, rightMargin=18 * mm, leftMargin=18 * mm,
-        topMargin=17 * mm, bottomMargin=20 * mm, title=config["title"],
+        topMargin=14 * mm, bottomMargin=16 * mm, title=config["title"],
         author="Pontificia Universidad Católica del Ecuador",
     )
-    story = [
+    text_header = [
         Paragraph("PUCE MOCAP - VINCULACIÓN CON LA COMUNIDAD - 2026", eyebrow_style),
         Paragraph(config["title"], title_style),
         Paragraph(
@@ -240,8 +242,35 @@ def export_pdf_report(csv_path: str | Path, path: str | Path | None = None) -> P
             f"{SOURCE_CODE_REPOSITORY}</link>",
             small_style,
         ),
-        Spacer(1, 3 * mm),
     ]
+
+    logo_path = resource_file("assets", "logo_puce.png")
+    if logo_path.is_file():
+        from reportlab.lib.utils import ImageReader
+        img_reader = ImageReader(str(logo_path))
+        iw, ih = img_reader.getSize()
+        aspect = ih / float(iw)
+        
+        img_width = 40 * mm
+        img_height = img_width * aspect
+        logo_img = Image(str(logo_path), width=img_width, height=img_height)
+        
+        header_table = Table(
+            [[text_header, logo_img]], 
+            colWidths=[130 * mm, 44 * mm],
+            hAlign="LEFT"
+        )
+        header_table.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ]))
+        story = [header_table, Spacer(1, 3 * mm)]
+    else:
+        story = text_header + [Spacer(1, 3 * mm)]
 
     first = rows[0]
     patient_fields = [
