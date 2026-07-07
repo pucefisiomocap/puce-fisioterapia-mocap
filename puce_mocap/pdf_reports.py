@@ -23,6 +23,7 @@ from reportlab.platypus import (
 )
 
 from puce_mocap.credits import SOURCE_CODE_REPOSITORY, STUDENTS, TUTOR
+from puce_mocap.report_interpreter import ReportInterpretation, build_report_interpretation
 from puce_mocap.reports_v2 import INSTITUTIONAL
 from puce_mocap.resources import resource_file
 
@@ -168,6 +169,41 @@ def _paragraph(value: Any, style: ParagraphStyle) -> Paragraph:
     return Paragraph(escape(str(value)).replace("\n", "<br/>"), style)
 
 
+def _provider_label(provider: str) -> str:
+    labels = {
+        "deterministico_local": "Reglas determinísticas locales",
+        "lfm_ollama_local": "LFM local vía Ollama",
+        "openrouter_remoto": "Modelo remoto vía OpenRouter",
+    }
+    return labels.get(provider, provider.replace("_", " "))
+
+
+def _interpretation_story(
+    interpretation: ReportInterpretation,
+    heading_style: ParagraphStyle,
+    body_style: ParagraphStyle,
+    small_style: ParagraphStyle,
+) -> list:
+    story = [
+        Paragraph("Interpretación automática local", heading_style),
+        Paragraph(f"Proveedor usado: {escape(_provider_label(interpretation.provider))}", small_style),
+        _paragraph(interpretation.resumen, body_style),
+    ]
+    sections = [
+        ("Hallazgos", interpretation.hallazgos),
+        ("Recomendaciones", interpretation.recomendaciones),
+        ("Limitaciones", interpretation.limitaciones),
+    ]
+    for title, items in sections:
+        if not items:
+            continue
+        story.append(Paragraph(title, small_style))
+        for item in items:
+            story.append(_paragraph(f"- {item}", body_style))
+    story.append(Spacer(1, 3 * mm))
+    return story
+
+
 def _footer(canvas, document) -> None:
     canvas.saveState()
     canvas.setStrokeColor(colors.HexColor("#B8C9C4"))
@@ -297,6 +333,9 @@ def export_pdf_report(csv_path: str | Path, path: str | Path | None = None) -> P
         ]))
         story.extend([Paragraph("Datos de la sesión", heading_style), patient_table, Spacer(1, 4 * mm)])
 
+    interpretation = build_report_interpretation(kind, rows)
+    story.extend(_interpretation_story(interpretation, heading_style, body_style, small_style))
+
     for index, row in enumerate(rows, start=1):
         section_name = row.get("ejercicio") or f"Registro {index}"
         metric_data = [[_paragraph("Métrica", table_header_style), _paragraph("Resultado", table_header_style)]]
@@ -337,7 +376,8 @@ def export_pdf_report(csv_path: str | Path, path: str | Path | None = None) -> P
         Paragraph("Aviso importante", heading_style),
         Paragraph(INSTITUTIONAL["aviso_no_diagnostico"], body_style),
         Paragraph(
-            "Los resultados deben interpretarse bajo supervisión profesional. El sistema no emite diagnósticos médicos.",
+            "Los resultados deben interpretarse bajo supervisión profesional. "
+            "El sistema no emite diagnósticos médicos.",
             body_style,
         ),
     ])

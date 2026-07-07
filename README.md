@@ -329,6 +329,30 @@ Pendiente manual:
 
 Los CSV v2 históricos y los PDF de la sesión más reciente se guardan en el directorio local de datos de la aplicación, no dentro de la instalación. En pruebas o despliegues puede definirse `PUCE_MOCAP_DATA_DIR`. Los reportes incluyen nombre y lesión por decisión del proyecto, por lo que deben tratarse como datos sensibles y nunca subirse a Git.
 
+Los PDF incluyen una sección de interpretación automática local. Por defecto esta interpretación es determinística: se genera con reglas de Python a partir de las métricas del CSV y no usa internet, servicios externos ni modelos de lenguaje. La interpretación es apoyo para lectura humana; no reemplaza la revisión del fisioterapeuta ni emite conclusiones clínicas.
+
+Opcionalmente puede activarse una redacción local con LFM2.5-350M mediante Ollama. El sistema envía solo métricas anonimizadas al servidor local de Ollama y excluye nombre, código, lesión, observaciones libres e identificadores de sesión. Si Ollama no está disponible o devuelve texto no válido, el PDF vuelve automáticamente a la interpretación determinística.
+
+Ejemplo local con Ollama:
+
+```powershell
+ollama run hf.co/LiquidAI/LFM2.5-350M-GGUF:Q4_K_M
+$env:PUCE_MOCAP_REPORT_INTERPRETER = "lfm_ollama"
+$env:PUCE_MOCAP_LFM_MODEL = "hf.co/LiquidAI/LFM2.5-350M-GGUF:Q4_K_M"
+$env:PUCE_MOCAP_LFM_OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
+```
+
+También puede activarse un proveedor remoto compatible con OpenRouter. Este modo no es local: aunque se excluyen identificadores personales y observaciones libres, las métricas anonimizadas salen del equipo hacia el proveedor configurado. Debe usarse solo si el equipo acepta esa condición. Cuando se selecciona OpenRouter, se ignora cualquier configuración de modelo local u Ollama.
+
+Ejemplo con OpenRouter:
+
+```powershell
+$env:PUCE_MOCAP_REPORT_INTERPRETER = "openrouter"
+$env:PUCE_MOCAP_OPENROUTER_API_KEY = "reemplazar_por_api_key"
+$env:PUCE_MOCAP_OPENROUTER_MODEL = "openrouter/free"
+$env:PUCE_MOCAP_OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+```
+
 ## Estado por Semana
 
 | Semana | Actividad principal | Entregable | Estado actual |
